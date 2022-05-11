@@ -2,7 +2,6 @@
 #include"texture.h"
 #include"func.h"
 #include"obj.h"
-#include"graphic.h"
 
 #include<vector>
 #include<string>
@@ -26,7 +25,7 @@ int main(int argc, char** argv) {
             main_dead.push_back(tmp);
         }
 
-        auto hero=heroin{1280/2, 720/2, 0, 0, 100};
+        
 
         auto quit=false;
         SDL_Event e;
@@ -39,36 +38,11 @@ int main(int argc, char** argv) {
             while(SDL_PollEvent(&e)!=0) {
                 if(e.type==SDL_QUIT) quit=true;
             }
-            const Uint8* keyStates=SDL_GetKeyboardState(nullptr);
-            if(keyStates[SDL_SCANCODE_UP]) {
-                hero.move(0, -0.5);
-            }
-            else if(keyStates[SDL_SCANCODE_DOWN]) {
-                hero.move(0, 0.5);
-            }
-            else if(keyStates[SDL_SCANCODE_LEFT]) {
-                hero.move(-0.5, 0);
-            }
-            else if(keyStates[SDL_SCANCODE_RIGHT]) {
-                hero.move(0.5, 0);
-            }
-            else if(keyStates[SDL_SCANCODE_RIGHT]&&keyStates[SDL_SCANCODE_UP]) {
-                hero.move(0.5, -0.5);
-            }
-            else if(keyStates[SDL_SCANCODE_RIGHT]&&keyStates[SDL_SCANCODE_DOWN]) {
-                hero.move(0.5, 0.5);
-            }
-            else if(keyStates[SDL_SCANCODE_LEFT]&&keyStates[SDL_SCANCODE_UP]) {
-                hero.move(-0.5, -0.5);
-            }
-            else if(keyStates[SDL_SCANCODE_LEFT]&&keyStates[SDL_SCANCODE_DOWN]) {
-                hero.move(-0.5, 0.5);
-            }
+            
 
 
             SDL_SetRenderDrawColor(render.get(), 0, 0, 0, 0);
             SDL_RenderClear(render.get());
-            render_frame(render.get(), &hero_idle, hero.x(), hero.y());
             SDL_RenderPresent(render.get());
             
             

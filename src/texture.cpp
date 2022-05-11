@@ -29,9 +29,9 @@ Texture::Texture(std::string const& text, SDL_Color color ) {
 }
 #endif
 
-void Texture::renderOut(SDL_Renderer* renderer, int x, int y) {
-    SDL_Rect renderQuad={x, y, qWidth, qHeight};
-    SDL_RenderCopy(renderer, qTexture, nullptr, &renderQuad);
+void Texture::renderOut(SDL_Renderer* renderer, int x, int y, SDL_Rect* src=nullptr) {
+    SDL_Rect dest={x, y, qWidth, qHeight};
+    SDL_RenderCopy(renderer, qTexture, src, &dest);
 }
 
 int Texture::getWidth() {

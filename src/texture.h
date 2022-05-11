@@ -23,9 +23,9 @@ class Texture {
         Texture(std::string text, SDL_Color);
         #endif
 
-        virtual ~Texture();
+        ~Texture();
 
-        virtual void renderOut(SDL_Renderer* renderer, int x, int y);
+        void renderOut(SDL_Renderer* renderer, int x, int y, SDL_Rect* src=nullptr);
 
 
         int getWidth();
