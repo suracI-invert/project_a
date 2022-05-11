@@ -1,0 +1,9 @@
+#ignore .vscode folder for personal settings
+
+.vscode/
+
+#executable
+*.exe
+
+#obj file by makefile
+*.o
