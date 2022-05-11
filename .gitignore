@@ -7,3 +7,5 @@
 
 #obj file by makefile
 *.o
+
+.git
