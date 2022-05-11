@@ -6,13 +6,41 @@ input::input() {
 
 bool input::quit() const {return quit_;}
 void input::update() {
-    key_state=SDL_GetKeyboardState(nullptr);
+    
     while(SDL_PollEvent(&e)) {
-        switch(e.type) {
-            case SDL_QUIT:  
-                quit_=true;
-            case SDL_KEY
+        if(e.type==SDL_QUIT) quit_=true;
+
+        if(e.type==SDL_KEYDOWN) {
+            switch(e.key.keysym.sym) {
+                case SDLK_w:
+
+                case SDLK_a:
+
+                case SDLK_s:
+
+                case SDLK_d:
+
+                default:
+                    break;
+            }
+
         }
+
+        if(e.type==SDL_KEYUP) {
+            switch(e.key.keysym.sym) {
+                case SDLK_w:
+
+                case SDLK_a:
+
+                case SDLK_s:
+
+                case SDLK_d:
+
+                default:
+                    break;
+            }
+        }
+
     }
 
 }
