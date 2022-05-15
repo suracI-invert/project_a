@@ -3,11 +3,12 @@
 
 #include<iostream>
 #include<string>
+#include<memory>
 
 #include<SDL.h>
 #include<SDL_image.h>
 
-
+#include"game.h"
 
 class Texture {
     private: 
@@ -16,8 +17,7 @@ class Texture {
         int qWidth=0;
 
     public: 
-        
-        Texture(const std::string& path, SDL_Renderer* render);
+        Texture(const char* path);
 
         #ifdef SDL_TTF_MAJOR_VERSION
         Texture(std::string text, SDL_Color);
@@ -25,14 +25,14 @@ class Texture {
 
         ~Texture();
 
-        void renderOut(SDL_Renderer* renderer, int x, int y, SDL_Rect* src=nullptr);
+        void renderOut(SDL_Rect* src=nullptr, SDL_Rect* dest=nullptr);
 
 
-        int getWidth();
+        int getWidth() const;
 
-        int getHeight();
+        int getHeight() const;
 
-        SDL_Texture* getTexture();
+        SDL_Texture* getTexture() const;
 };
 
 #endif

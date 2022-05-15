@@ -2,5 +2,6 @@ CC=g++
 LIBFLAG=-Iinclude -Llib
 FLAGS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
 
+
 all:
 	$(CC) $(LIBFLAG) -o game.exe src/*.cpp $(FLAGS)
