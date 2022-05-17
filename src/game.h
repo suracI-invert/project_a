@@ -9,7 +9,7 @@
 
 #include"entity.h"
 #include"component.h"
-
+#include"obj.h"
 
 
 class game{
@@ -18,7 +18,8 @@ class game{
         SDL_Window* window;
         
     public:
-        
+        static vector* playerPos;
+        static std::vector<circle*> threatColliders;
         static int w;
         static int h;
         static SDL_Event e;

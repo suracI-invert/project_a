@@ -9,7 +9,7 @@ float calculateDistance(const float& ax, const float& ay, const float& bx, const
 
 bool collisionCheck(const circle& a, const circle& b) {
     float totalRadiusSquare=a.r + b.r;
-    totalRadiusSquare=totalRadiusSquare*totalRadiusSquare;
+    totalRadiusSquare*=totalRadiusSquare;
     if(calculateDistance(a.x, a.y, b.x, b.y)<=totalRadiusSquare) return true;
     return false;
 }

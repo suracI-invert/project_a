@@ -3,37 +3,36 @@
 vector::vector(float x_, float y_) {
     x=x_;
     y=y_;
-    // length=sqrt(x*x+y*y);
-    // if(length==0) rad=0;
-    // else rad=acosf(x/length);
 }
 
-// vector::vector(float length, float rad) {
-//     this->length=length;
-//     this->rad=rad;
-//     x=length*cosf(rad);
-//     y=length*sinf(rad);
-// }
+float vector::magnitude() const {
+    if(x==0 && y==0) {
+        return 0;  
+    }
+    if(x==0) {
+        return y;
+    }
+    if(y==0) {
+        return x;
+    }
+    return sqrt(x*x+y*y);;
+}
 
-// vector& vector::add(const vector& v) {
-//     this->x+=v.x;
-//     this->y+=v.y;
-// }
-
-// vector& vector::subtract(const vector& v) {
-//     this->x-=v.x;
-//     this->y-=v.y;
-// }
-
-// vector& vector::multiply(const vector& v) {
-//     this->x*=v.x;
-//     this->y*=v.y;
-// }
-
-// vector& vector::divide(const vector& v) {
-//     this->x/=v.x;
-//     this->y/=v.y;
-// }
+float vector::rad() const {
+    if(x==0 && y==0) {
+        return 0;
+    }
+    if(x==0) {
+        return PI/2;
+    }
+    if(y==0) {
+        return 0;
+    }
+    if(y>0) {
+        return acosf(x/magnitude());
+    }
+    return -acosf(x/magnitude());
+}
 
 vector vector::operator+(const vector& other) {
     vector v;
@@ -118,3 +117,13 @@ vector vector::normalize() {
     return vector{this->x/vd, this->y/vd};
 }
 
+float vector::getDeltaRad(const vector& other) {
+    return this->rad()-other.rad();
+}
+
+vector vector::direction(const vector& otherPos) {
+    vector v;
+    v.x=otherPos.x-this->x;
+    v.y=otherPos.y-this->y;
+    return v;
+}

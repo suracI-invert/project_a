@@ -5,12 +5,16 @@ pos::pos(float x_, float y_) {
     position.y=y_;
 }
 
+void pos::setSpeed(float speed_) {speed=speed_;}
+
 void pos::init() {
     velocity.x=0;
     velocity.y=0;
+    
 }
 
 void pos::update() {
+    
     position=position+velocity.normalize()*speed;
 }
 
@@ -50,7 +54,7 @@ void keyboardHandler::init() {
 }
 
 void keyboardHandler::update() {
-    if(game::e.type==SDL_KEYDOWN&&game::e.key.repeat==0) {
+    if(game::e.type==SDL_KEYDOWN) {
         switch(game::e.key.keysym.sym) {
             case SDLK_w:
                 position->velocity.y=-1;
@@ -71,8 +75,9 @@ void keyboardHandler::update() {
             default:
                 break;
         }
+    }
 
-    if(game::e.type==SDL_KEYUP&&game::e.key.repeat==0) {
+    if(game::e.type==SDL_KEYUP) {
         switch(game::e.key.keysym.sym) {
             case SDLK_w:
                 position->velocity.y=0;
@@ -92,9 +97,9 @@ void keyboardHandler::update() {
 
             default: 
                 break;
-                }
-            }    
-    }
+        }
+    }    
+    
 }
 
 
@@ -104,11 +109,12 @@ collision::collision() {
     this->r=0;
 }
 
-collision::collision(float offset_x, float offset_y, float r, int boundaryFlag) {
+collision::collision(float offset_x, float offset_y, float r, bool hostile, int boundaryFlag) {
     this->offset_x=offset_x;
     this->offset_y=offset_y;
     this->r=r;
     this->boundaryFlag=boundaryFlag;
+    this->hostile=hostile;
 }
 
 void collision::init() {
@@ -116,6 +122,8 @@ void collision::init() {
     collider.r=r;
     boundaryMark.w=(int)entity->getComponent<graphic>().w;
     boundaryMark.w=(int)entity->getComponent<graphic>().h;
+
+    if(hostile) game::threatColliders.push_back(&collider);
 }
 
 void collision::update() {
@@ -143,4 +151,27 @@ void collision::update() {
                 break;
         }
     }
+}
+
+behavior::behavior(float x, float y) {
+    this->dir.x=x;
+    this->dir.y=y;
+}
+
+void behavior::init() {
+    position=&entity->getComponent<pos>();
+    target={0, 0};
+}
+
+void behavior::update() {
+    dir=position->position.direction(*game::playerPos);
+    
+    entity->getComponent<pos>().velocity=dir;
+}
+
+void behavior::draw() {
+    std::cout<<"enemy: \n"<<"x: "<<position->position.x<<" y: "<<position->position.y<<std::endl
+             <<"velocity-> x: "<<position->velocity.x<<" y: "<<position->velocity.y<<std::endl
+             <<"direction->x: "<<dir.x<<" y: "<<dir.y<<std::endl
+             <<"target->x: "<<target.x<<" y: "<<target.y<<std::endl;
 }

@@ -100,7 +100,6 @@ class manager{
             list.erase(std::remove_if(list.begin(), list.end(),[](std::unique_ptr<entity>& e)->bool{return !e->active;}), list.end());
         }
 
-
         entity& addEntity() {
             entity* e=new entity();
             std::unique_ptr<entity> ptr{e};

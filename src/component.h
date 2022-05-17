@@ -4,8 +4,8 @@
 #include"game.h"
 #include"texture.h"
 #include"entity.h"
-#include"obj.h"
 #include"collision.h"
+#include"obj.h"
 
 
 class Texture;
@@ -16,12 +16,15 @@ class pos:public component{
     public:
         vector position;
         vector velocity;
-
+        
+        float acceleration;
         float speed=1;
 
         pos()=default;
 
         pos(float x_, float y_);
+
+        void setSpeed(float speed_);
         
         ~pos() override;
 
@@ -59,6 +62,7 @@ class keyboardHandler:public component{
         void update() override;
 };
 
+
 enum boundaryInteractions{
     ignore,
     destroy,
@@ -70,18 +74,30 @@ class collision:public component{
         float offset_x, offset_y, r;
         int boundaryFlag;
     public:
+        bool hostile;
         circle collider;
         SDL_Rect boundaryMark;
         pos* position;
 
         collision();
-        collision(float offset_x, float offset_y, float r, int boundaryFlag=ignore);
+        collision(float offset_x, float offset_y, float r, bool hostile, int boundaryFlag=ignore);
 
         void init() override;
         void update() override;
 };
 
-
+class behavior:public component{
+    private:
+        pos* position;
+        vector dir;
+        vector target;
+    public:
+        behavior(float x=0, float y=0);
+        
+        void init() override;
+        void update() override;
+        void draw() override;
+};
 
 
 #endif

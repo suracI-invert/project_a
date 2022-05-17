@@ -5,10 +5,14 @@
 manager m;
 
 entity& player=m.addEntity();
-entity& threat=m.addEntity();
+entity& enemy1=m.addEntity();
+entity& enemy2=m.addEntity();
+entity& enemy3=m.addEntity();
 SDL_Renderer* game::renderer=nullptr;
 SDL_Event game::e;
 
+std::vector<circle*> game::threatColliders;
+vector* game::playerPos;
 
 int game::w;
 int game::h;
@@ -45,12 +49,29 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     player.addComponent<pos>(1280/2, 720/2);
     player.addComponent<graphic>("build/img/main.png");
     player.addComponent<keyboardHandler>();
-    player.addComponent<collision>(12.5, (float)player.getComponent<graphic>().w-12.5 , 12.5, true);
+    player.addComponent<collision>(12.5, (float)player.getComponent<graphic>().w/2+12.5 , 12.5, false, condone);
+    player.getComponent<pos>().setSpeed(1.5);
     
-    threat.addComponent<pos>(100, 100);
-    threat.addComponent<graphic>("build/img/enemy1.png");
-    threat.addComponent<collision>(15, 15, 15);
+    enemy1.addComponent<pos>(100, 100);
+    enemy1.addComponent<graphic>("build/img/enemy1.png");
+    enemy1.addComponent<collision>(15, 15, 15, true);
+    enemy1.addComponent<behavior>();
+    enemy1.getComponent<pos>().setSpeed(0.5);
+
+    enemy2.addComponent<pos>(200, 100);
+    enemy2.addComponent<graphic>("build/img/enemy1.png");
+    enemy2.addComponent<collision>(15, 15, 15, true);
+    enemy2.addComponent<behavior>();
+    enemy2.getComponent<pos>().setSpeed(0.5);
+
+    enemy3.addComponent<pos>(100, 300);
+    enemy3.addComponent<graphic>("build/img/enemy1.png");
+    enemy3.addComponent<collision>(15, 15, 15, true);
+    enemy3.addComponent<behavior>();
+    enemy3.getComponent<pos>().setSpeed(0.5);
+
 }
+
 game::~game() {
     if(!isRunning) {
         // std::cout<<"end game \n";
@@ -72,15 +93,16 @@ void game::handleInput() {
 }
 
 void game::update() {
-    
+    playerPos=&player.getComponent<pos>().position;
     m.reset();
     m.update();
-    if(collisionCheck(player.getComponent<collision>().collider, threat.getComponent<collision>().collider) ) {
-        isRunning=false;
-        std::cout<<"game end! \n";
+    
+    for(auto c: threatColliders) {
+        if(collisionCheck(player.getComponent<collision>().collider, *c)) {
+            isRunning=false;
+            std::cout<<"game end! \n";
+        }
     }
-    // std::cout<<"player: \n"<<"x: "<<player.getComponent<pos>().position.x<<std::endl<<"y: "<<player.getComponent<pos>().position.y<<std::endl
-    //          <<"enemy: \n" <<"x: "<<threat.getComponent<pos>().position.x<<std::endl<<"y: "<<threat.getComponent<pos>().position.y<<std::endl;
 }
 
 void game::render() {

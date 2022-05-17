@@ -9,21 +9,19 @@ struct circle{
     float r;
 };
 
+
 class vector{
     private:
-        // float rad, length;
+        
     public:
         float x;
         float y;
 
         vector()=default;
         vector(float x_, float y_);
-        // vector(float length, float rad);
 
-        // vector& add(const vector& v);
-        // vector& subtract(const vector& v);
-        // vector& multiply(const vector& v);
-        // vector& divide(const vector& v);
+        float magnitude() const;
+        float rad() const;
 
         vector operator+(const vector& other);
         vector operator-(const vector& other);
@@ -41,11 +39,10 @@ class vector{
         vector operator/(const float& other);
 
         vector normalize();
-
-        // vector& operator+=(const vector& other);
-        // vector& operator-=(const vector& other);
-        // vector& operator*=(const vector& other);
-        // vector& operator/=(const vector& other);
+        vector direction(const vector& other);
+        float dotProduct(const vector& other);
+        float length() const;
+        float getDeltaRad(const vector& other);
 };
 
 #endif
