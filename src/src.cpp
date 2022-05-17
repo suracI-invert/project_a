@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
         auto game_=game{"test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, false};
         while(game_.running()) {
             frameStart=SDL_GetTicks64();
-            std::cout<<"start frame \n";
+            // std::cout<<"start frame \n";
 
             game_.handleInput();
             game_.update();
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
             if(frameDelay>frameTime) SDL_Delay(frameDelay-frameTime);
         
-            std::cout<<"end frame \n";
+            // std::cout<<"end frame \n";
         }
     }
     

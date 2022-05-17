@@ -11,12 +11,17 @@
 #include"component.h"
 
 
+
 class game{
     private:
         bool isRunning;
         SDL_Window* window;
         
     public:
+        
+        static int w;
+        static int h;
+        static SDL_Event e;
         static SDL_Renderer* renderer;
         game(const char* title, int x, int y, int w, int h, bool fullscreen);
         ~game();

@@ -1,15 +1,24 @@
 #include"game.h"
 #include"entity.h"
-#include"component.h"
+
 
 manager m;
 
 entity& player=m.addEntity();
+entity& threat=m.addEntity();
 SDL_Renderer* game::renderer=nullptr;
+SDL_Event game::e;
+
+
+int game::w;
+int game::h;
 
 game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     isRunning=true;
-    std::cout<<"runinng \n";
+    // std::cout<<"runinng \n";
+
+    this->w=w;
+    this->h=h;
 
     auto const sdl_result=SDL_Init(SDL_INIT_EVERYTHING);
 	if(sdl_result!=0) throw std::runtime_error{std::string{"Unable to init sdl: "}+SDL_GetError()};
@@ -34,12 +43,17 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
 
 
     player.addComponent<pos>(1280/2, 720/2);
-    player.addComponent<sprite>("build/img/main.png");
+    player.addComponent<graphic>("build/img/main.png");
+    player.addComponent<keyboardHandler>();
+    player.addComponent<collision>(12.5, (float)player.getComponent<graphic>().w-12.5 , 12.5, true);
     
+    threat.addComponent<pos>(100, 100);
+    threat.addComponent<graphic>("build/img/enemy1.png");
+    threat.addComponent<collision>(15, 15, 15);
 }
 game::~game() {
     if(!isRunning) {
-        std::cout<<"end game \n";
+        // std::cout<<"end game \n";
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         Mix_Quit();
@@ -49,7 +63,6 @@ game::~game() {
 }
 
 void game::handleInput() {
-    SDL_Event e;
     SDL_PollEvent(&e);
     switch(e.type) {
         case SDL_QUIT:
@@ -62,16 +75,21 @@ void game::update() {
     
     m.reset();
     m.update();
+    if(collisionCheck(player.getComponent<collision>().collider, threat.getComponent<collision>().collider) ) {
+        isRunning=false;
+        std::cout<<"game end! \n";
+    }
+    // std::cout<<"player: \n"<<"x: "<<player.getComponent<pos>().position.x<<std::endl<<"y: "<<player.getComponent<pos>().position.y<<std::endl
+    //          <<"enemy: \n" <<"x: "<<threat.getComponent<pos>().position.x<<std::endl<<"y: "<<threat.getComponent<pos>().position.y<<std::endl;
 }
 
 void game::render() {
-    std::cout<<"render \n";
+    // std::cout<<"render \n";
     SDL_RenderClear(renderer);
     
-    
     m.draw();
-    std::cout<<player.getComponent<pos>().x<<" ";
-    std::cout<<player.getComponent<pos>().y<<std::endl;
+    
+    
     SDL_RenderPresent(renderer);
 }
 
