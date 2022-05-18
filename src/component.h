@@ -38,13 +38,19 @@ class graphic:public component{
     private:
         pos* position;
         std::unique_ptr<Texture> texture;
+
         SDL_Rect src, dest;
+
+        bool rotate=false;
+        SDL_Point center;
+        double angle;
     public:
         int w, h;
 
         graphic()=default;
 
         graphic(const char* path);
+        graphic(const char* path, SDL_Point center_);
         
         ~graphic() override {}
 
@@ -56,7 +62,10 @@ class graphic:public component{
 class keyboardHandler:public component{
     private:
         pos* position;
+        
     public:
+        static vector mousePos;
+
         void init() override;
         
         void update() override;

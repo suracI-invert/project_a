@@ -30,6 +30,19 @@ graphic::graphic(const char* path) {
     dest.h=texture->getHeight();
 }
 
+graphic::graphic(const char* path, SDL_Point center_) {
+    texture=std::unique_ptr<Texture> {new Texture{path}};
+
+    src.w=texture->getWidth();
+    src.h=texture->getHeight();
+
+    dest.w=texture->getWidth();
+    dest.h=texture->getHeight();
+
+    rotate=true;
+    center=center_;
+}
+
 void graphic::init() {
     position=&entity->getComponent<pos>();
 
@@ -37,20 +50,35 @@ void graphic::init() {
 
     w=texture->getWidth();
     h=texture->getHeight();
+
+    angle=90;
 }
 
 void graphic::update() {
     dest.x=(float)position->position.x;
     dest.y=(float)position->position.y;
+
+    vector centerPos{};
+    centerPos.x=position->position.x+center.x;
+    centerPos.y=position->position.y+center.y;
+
+    if(centerPos!=keyboardHandler::mousePos) {
+        vector directionToMouse=centerPos.direction(keyboardHandler::mousePos);
+        angle=radToDeg(directionToMouse.rad())+90;
+    }
 }
 
 void graphic::draw() {
-    texture->renderOut(&src, &dest);
+    if(!rotate) texture->renderOut(&src, &dest);
+    else texture->renderOut(&src, &dest, angle, &center);
 }
 
 
+vector keyboardHandler::mousePos;
+
 void keyboardHandler::init() {
     position=&entity->getComponent<pos>();
+    mousePos={0, 0};
 }
 
 void keyboardHandler::update() {
@@ -100,6 +128,12 @@ void keyboardHandler::update() {
         }
     }    
     
+    if(game::e.type==SDL_MOUSEMOTION) {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        mousePos.x=x;
+        mousePos.y=y;
+    }
 }
 
 
