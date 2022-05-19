@@ -16,6 +16,8 @@ class Texture {
         int qHeight=0;
         int qWidth=0;
 
+    
+
     public: 
         Texture(const char* path);
 
@@ -25,7 +27,8 @@ class Texture {
 
         ~Texture();
 
-        void renderOut(SDL_Rect* src=nullptr, SDL_Rect* dest=nullptr);
+        void renderOut(SDL_Rect* src, SDL_Rect* dest);
+        void renderOut(SDL_Rect* src, SDL_Rect* dest, const double& angle, SDL_Point* center);
 
 
         int getWidth() const;

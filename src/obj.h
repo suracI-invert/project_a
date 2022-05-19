@@ -9,6 +9,11 @@ struct circle{
     float r;
 };
 
+double degToRad(const double deg);
+float degToRad(const float deg);
+
+double radToDeg(const double rad);
+float radToDeg(const float rad);
 
 class vector{
     private:
@@ -37,6 +42,9 @@ class vector{
         vector operator-(const float& other);
         vector operator*(const float& other);
         vector operator/(const float& other);
+
+        bool operator==(const vector& other);
+        bool operator!=(const vector& other);
 
         vector normalize();
         vector direction(const vector& other);

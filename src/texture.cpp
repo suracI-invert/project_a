@@ -16,6 +16,7 @@ Texture::Texture(const char* path) {
     SDL_FreeSurface(loadedSurface);
 
     std::cout<<"texture loaded"<<std::endl;
+
 }
 
 #ifdef SDL_TTF_MAJOR_VERSION
@@ -35,6 +36,11 @@ Texture::Texture(const char* text, SDL_Color color ) {
 void Texture::renderOut(SDL_Rect* src, SDL_Rect* dest) {
     
     SDL_RenderCopy(game::renderer, qTexture, src, dest);
+}
+
+void Texture::renderOut(SDL_Rect* src, SDL_Rect* dest, const double& angle, SDL_Point* center) {
+    
+    SDL_RenderCopyEx(game::renderer, qTexture, src, dest, angle, center, SDL_FLIP_NONE);
 }
 
 int Texture::getWidth() const {

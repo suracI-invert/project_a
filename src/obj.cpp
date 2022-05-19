@@ -109,6 +109,16 @@ vector vector::operator/(const float& other) {
     return v;
 }
 
+bool vector::operator==(const vector& other) {
+    if(this->x==other.x && this->y==other.y) return true;
+    return false;
+}
+
+bool vector::operator!=(const vector& other) {
+    if(this->x==other.x && this->y==other.y) return false;
+    return true;
+}
+
 vector vector::normalize() {
     float vd=1;
     if(this->x!=0 || this->y!=0) {
@@ -126,4 +136,20 @@ vector vector::direction(const vector& otherPos) {
     v.x=otherPos.x-this->x;
     v.y=otherPos.y-this->y;
     return v;
+}
+
+
+double degToRad(const double deg) {
+    return deg*(PI/180);
+}
+float degToRad(const float deg) {
+    return deg*(PI/180);
+}
+
+double radToDeg(const double rad) {
+    return rad*(180/PI);
+}
+
+float radToDeg(const float rad) {
+    return rad*(180/PI);
 }

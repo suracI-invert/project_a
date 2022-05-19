@@ -1,6 +1,11 @@
 #include"game.h"
 #include"entity.h"
 
+enum groupLabels:std::size_t {
+    players, 
+    enemies,
+    projectiles
+};
 
 manager m;
 
@@ -47,28 +52,32 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
 
 
     player.addComponent<pos>(1280/2, 720/2);
-    player.addComponent<graphic>("build/img/main.png");
+    player.addComponent<graphic>("build/img/main.png", SDL_Point{13, 38});
     player.addComponent<keyboardHandler>();
     player.addComponent<collision>(12.5, (float)player.getComponent<graphic>().w/2+12.5 , 12.5, false, condone);
     player.getComponent<pos>().setSpeed(1.5);
+    player.addGroup(players);
     
     enemy1.addComponent<pos>(100, 100);
     enemy1.addComponent<graphic>("build/img/enemy1.png");
     enemy1.addComponent<collision>(15, 15, 15, true);
     enemy1.addComponent<behavior>();
     enemy1.getComponent<pos>().setSpeed(0.5);
+    enemy1.addGroup(enemies);
 
     enemy2.addComponent<pos>(200, 100);
     enemy2.addComponent<graphic>("build/img/enemy1.png");
     enemy2.addComponent<collision>(15, 15, 15, true);
     enemy2.addComponent<behavior>();
     enemy2.getComponent<pos>().setSpeed(0.5);
+    enemy2.addGroup(enemies);
 
     enemy3.addComponent<pos>(100, 300);
     enemy3.addComponent<graphic>("build/img/enemy1.png");
     enemy3.addComponent<collision>(15, 15, 15, true);
     enemy3.addComponent<behavior>();
     enemy3.getComponent<pos>().setSpeed(0.5);
+    enemy3.addGroup(enemies);
 
 }
 
@@ -89,6 +98,11 @@ void game::handleInput() {
         case SDL_QUIT:
             isRunning=false;
             break;
+        
+        case SDL_KEYDOWN:
+            if(e.key.keysym.sym==SDLK_ESCAPE)
+                isRunning=false;
+                break;
     }
 }
 
@@ -103,13 +117,20 @@ void game::update() {
             std::cout<<"game end! \n";
         }
     }
+
+    
 }
 
 void game::render() {
     // std::cout<<"render \n";
     SDL_RenderClear(renderer);
     
-    m.draw();
+    for(auto& i:m.getGroup(players)) {
+        i->draw();
+    }
+    for(auto& i:m.getGroup(enemies)) {
+        i->draw();
+    }
     
     
     SDL_RenderPresent(renderer);
