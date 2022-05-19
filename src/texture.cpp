@@ -1,5 +1,5 @@
 #include"texture.h"
-#include"component.h"
+
 
 //texture class
 Texture::Texture(const char* path) {

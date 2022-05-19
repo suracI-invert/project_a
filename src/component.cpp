@@ -1,4 +1,5 @@
 #include"component.h"
+#include"game.h"
 
 pos::pos(float x_, float y_) {
     position.x=x_;

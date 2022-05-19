@@ -1,5 +1,4 @@
 #include"game.h"
-#include"entity.h"
 
 enum groupLabels:std::size_t {
     players, 

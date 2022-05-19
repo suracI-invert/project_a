@@ -8,14 +8,15 @@
 #include<bitset>
 #include<array>
 
-#include"texture.h"
 
 class manager;
 class entity;
 class component;
 
+
 using ID=std::size_t;
 using group=std::size_t;
+
 
 inline ID getTypeID() {
     static ID lastID=0u;
@@ -35,7 +36,6 @@ using componentList=std::array<component*, maxComponents>;
 
 using groupStates=std::bitset<maxGroups>;
 
-
 class component{
     public:
         entity* entity;
@@ -46,6 +46,7 @@ class component{
 
         virtual ~component() {}
 };
+
 
 class entity{
     private:

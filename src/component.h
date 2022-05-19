@@ -1,9 +1,8 @@
 #ifndef _COMPONENT_H
 #define _COMPONENT_H
 
-#include"game.h"
-#include"texture.h"
 #include"entity.h"
+#include"texture.h"
 #include"collision.h"
 #include"obj.h"
 

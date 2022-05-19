@@ -2,13 +2,15 @@
 #define _GAME_H
 
 #include<iostream>
+#include<vector>
 
-#include"SDL.h"
-#include"SDL_image.h"
-#include"SDL_mixer.h"
+#include<SDL.h>
+#include<SDL_image.h>
+#include<SDL_mixer.h>
 
-#include"entity.h"
+
 #include"component.h"
+#include"entity.h"
 #include"obj.h"
 
 
