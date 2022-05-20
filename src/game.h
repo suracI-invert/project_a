@@ -12,7 +12,17 @@
 #include"component.h"
 #include"entity.h"
 #include"obj.h"
+#include"asset.h"
 
+enum groupLabels:std::size_t {
+    players, 
+    enemies,
+    projectiles,
+    friendlyFire
+};
+
+
+class asset;
 
 class game{
     private:
@@ -20,6 +30,7 @@ class game{
         SDL_Window* window;
         
     public:
+        static asset* assetManager;
         static vector* playerPos;
         static std::vector<circle*> threatColliders;
         static int w;

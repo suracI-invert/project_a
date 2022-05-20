@@ -1,21 +1,17 @@
 #include"game.h"
 
-enum groupLabels:std::size_t {
-    players, 
-    enemies,
-    projectiles
-};
-
 manager m;
+
+int count =0;
 
 entity& player=m.addEntity();
 entity& enemy1=m.addEntity();
 entity& enemy2=m.addEntity();
 entity& enemy3=m.addEntity();
+
+asset* game::assetManager=new asset(&m);
 SDL_Renderer* game::renderer=nullptr;
 SDL_Event game::e;
-
-std::vector<circle*> game::threatColliders;
 vector* game::playerPos;
 
 int game::w;
@@ -49,35 +45,44 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     if(!renderer) throw std::runtime_error{std::string{"Unable create renderer: "}+SDL_GetError()};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
+    assetManager->addTexture("player", "build/img/main.png");
+    assetManager->addTexture("enemy1", "build/img/enemy1.png");
+    assetManager->addTexture("bullet", "build/img/enemy1_bullet.png");
+ 
 
-    player.addComponent<pos>(1280/2, 720/2);
-    player.addComponent<graphic>("build/img/main.png", SDL_Point{13, 38});
+    player.addComponent<pos>(1280/2, 720/2, 13, 38);
+    player.addComponent<graphic>("player", true);
     player.addComponent<keyboardHandler>();
-    player.addComponent<collision>(12.5, (float)player.getComponent<graphic>().w/2+12.5 , 12.5, false, condone);
+    player.addComponent<collision>(12, condone);
     player.getComponent<pos>().setSpeed(1.5);
+    player.addComponent<muzzle>(main_char_lv1, 100);
     player.addGroup(players);
+
+
     
-    enemy1.addComponent<pos>(100, 100);
-    enemy1.addComponent<graphic>("build/img/enemy1.png");
-    enemy1.addComponent<collision>(15, 15, 15, true);
+    enemy1.addComponent<pos>(100, 100, 15, 15);
+    enemy1.addComponent<graphic>("enemy1", false);
+    enemy1.addComponent<collision>(15);
     enemy1.addComponent<behavior>();
+    enemy1.addComponent<muzzle>(enemy_single_muzzle, 50);
     enemy1.getComponent<pos>().setSpeed(0.5);
     enemy1.addGroup(enemies);
 
-    enemy2.addComponent<pos>(200, 100);
-    enemy2.addComponent<graphic>("build/img/enemy1.png");
-    enemy2.addComponent<collision>(15, 15, 15, true);
+    enemy2.addComponent<pos>(200, 100, 15, 15);
+    enemy2.addComponent<graphic>("enemy1", false);
+    enemy2.addComponent<collision>(15);
     enemy2.addComponent<behavior>();
     enemy2.getComponent<pos>().setSpeed(0.5);
     enemy2.addGroup(enemies);
 
-    enemy3.addComponent<pos>(100, 300);
-    enemy3.addComponent<graphic>("build/img/enemy1.png");
-    enemy3.addComponent<collision>(15, 15, 15, true);
+    enemy3.addComponent<pos>(100, 300, 15, 15);
+    enemy3.addComponent<graphic>("enemy1", false);
+    enemy3.addComponent<collision>(15);
     enemy3.addComponent<behavior>();
     enemy3.getComponent<pos>().setSpeed(0.5);
     enemy3.addGroup(enemies);
 
+    std::cout<<"init done! \n";
 }
 
 game::~game() {
@@ -106,31 +111,44 @@ void game::handleInput() {
 }
 
 void game::update() {
+    // std::cout<<"update! \n";
     playerPos=&player.getComponent<pos>().position;
     m.reset();
     m.update();
+    // std::cout<<"player: \nx:"<<player.getComponent<pos>().position.x<<" y: "<<player.getComponent<pos>().position.x<<"\n";
+    if(enemy1.getComponent<muzzle>().shoot) {assetManager->createProjectile("bullet", 2, enemy1.getComponent<pos>().center, vector{5, 5}, 5, enemy1.getComponent<muzzle>().direcion(), true); std::cout<<"enemy fires \n";}
+    if(player.getComponent<muzzle>().shoot) assetManager->createProjectile("bullet", 2, player.getComponent<pos>().center, vector{5, 5}, 5, player.getComponent<muzzle>().direcion(), false);
     
-    for(auto c: threatColliders) {
-        if(collisionCheck(player.getComponent<collision>().collider, *c)) {
+    for(auto& e: m.getGroup(enemies)) {
+        if(collisionCheck(player.getComponent<collision>().collider, e->getComponent<collision>().collider)) {
             isRunning=false;
             std::cout<<"game end! \n";
         }
     }
 
-    
+    for(auto& e: m.getGroup(projectiles)) {
+        if(collisionCheck(player.getComponent<collision>().collider, e->getComponent<collision>().collider)) {
+            isRunning=false;
+            std::cout<<"game end! \n";
+        }
+    }
+
+    for(auto& p:m.getGroup(friendlyFire)) {
+        for(auto& e:m.getGroup(enemies)) {
+            if(collisionCheck(p->getComponent<collision>().collider, e->getComponent<collision>().collider)) {e->destroy(); p->destroy(); std::cout<<"enemy destroyed!\n";}
+        }
+    }
 }
+
 
 void game::render() {
     // std::cout<<"render \n";
     SDL_RenderClear(renderer);
     
-    for(auto& i:m.getGroup(players)) {
-        i->draw();
-    }
-    for(auto& i:m.getGroup(enemies)) {
-        i->draw();
-    }
-    
+    for(auto& i:m.getGroup(players)) {i->draw();}
+    for(auto& i:m.getGroup(projectiles)) {i->draw();}
+    for(auto& i:m.getGroup(friendlyFire)) {i->draw();}
+    for(auto& i:m.getGroup(enemies)) {i->draw();}
     
     SDL_RenderPresent(renderer);
 }

@@ -16,10 +16,10 @@ bool collisionCheck(const circle& a, const circle& b) {
 
 
 
-int withinBoundary(SDL_Rect& boundaryMark)  {
-    if(boundaryMark.x<0) return left;
-    if(boundaryMark.x>game::w) return right;
-    if(boundaryMark.y<0) return top;
-    if(boundaryMark.y>game::h) return down;
+int withinBoundary(const SDL_Rect& boundaryMark)  {
+    if(boundaryMark.x<=0) return left;
+    if(boundaryMark.x+boundaryMark.w>=game::w) return right;
+    if(boundaryMark.y<=0) return top;
+    if(boundaryMark.y+boundaryMark.h>=game::h) return down;
     return inside;
 }

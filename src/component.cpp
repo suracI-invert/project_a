@@ -1,9 +1,17 @@
 #include"component.h"
 #include"game.h"
 
-pos::pos(float x_, float y_) {
+pos::pos(const float& x_, const float& y_) {
     position.x=x_;
     position.y=y_;
+}
+
+pos::pos(const float& x_, const float& y_, const float& offset_center_x, const float& offset_center_y) {
+    position.x=x_;
+    position.y=y_;
+
+    offset_x=offset_center_x;
+    offset_y=offset_center_y;
 }
 
 void pos::setSpeed(float speed_) {speed=speed_;}
@@ -17,22 +25,14 @@ void pos::init() {
 void pos::update() {
     
     position=position+velocity.normalize()*speed;
+    center.x=position.x+offset_x;
+    center.y=position.y+offset_y;
 }
 
 pos::~pos() {}
 
-graphic::graphic(const char* path) {
-    texture=std::unique_ptr<Texture> {new Texture{path}};
-
-    src.w=texture->getWidth();
-    src.h=texture->getHeight();
-
-    dest.w=texture->getWidth();
-    dest.h=texture->getHeight();
-}
-
-graphic::graphic(const char* path, SDL_Point center_) {
-    texture=std::unique_ptr<Texture> {new Texture{path}};
+graphic::graphic(const std::string& id, bool rotate_) {
+    texture=game::assetManager->GetTexture(id);
 
     src.w=texture->getWidth();
     src.h=texture->getHeight();
@@ -40,8 +40,7 @@ graphic::graphic(const char* path, SDL_Point center_) {
     dest.w=texture->getWidth();
     dest.h=texture->getHeight();
 
-    rotate=true;
-    center=center_;
+    rotate=rotate_;
 }
 
 void graphic::init() {
@@ -53,15 +52,15 @@ void graphic::init() {
     h=texture->getHeight();
 
     angle=90;
+    center.x=position->offset_x;
+    center.y=position->offset_y;
 }
 
 void graphic::update() {
-    dest.x=(float)position->position.x;
-    dest.y=(float)position->position.y;
+    dest.x=(int)position->position.x;
+    dest.y=(int)position->position.y;
 
-    vector centerPos{};
-    centerPos.x=position->position.x+center.x;
-    centerPos.y=position->position.y+center.y;
+    vector centerPos=position->center;
 
     if(centerPos!=keyboardHandler::mousePos) {
         vector directionToMouse=centerPos.direction(keyboardHandler::mousePos);
@@ -135,38 +134,38 @@ void keyboardHandler::update() {
         mousePos.x=x;
         mousePos.y=y;
     }
+
+    if(game::e.type==SDL_MOUSEBUTTONDOWN&&game::e.button.button==SDL_BUTTON_LEFT) {muzzle::fire=true; std::cout<<"shoot! \n";}
+    if(game::e.type==SDL_MOUSEBUTTONUP&&game::e.button.button==SDL_BUTTON_LEFT) muzzle::fire=false;
 }
 
 
 collision::collision() {
-    this->offset_x=0;
-    this->offset_y=0;
     this->r=0;
 }
 
-collision::collision(float offset_x, float offset_y, float r, bool hostile, int boundaryFlag) {
-    this->offset_x=offset_x;
-    this->offset_y=offset_y;
+collision::collision(const float& r, const int& boundaryFlag) {
     this->r=r;
     this->boundaryFlag=boundaryFlag;
-    this->hostile=hostile;
 }
+
+collision::~collision() {}
 
 void collision::init() {
     position=&entity->getComponent<pos>();
     collider.r=r;
-    boundaryMark.w=(int)entity->getComponent<graphic>().w;
-    boundaryMark.w=(int)entity->getComponent<graphic>().h;
-
-    if(hostile) game::threatColliders.push_back(&collider);
+    boundaryMark.w=entity->getComponent<graphic>().w;
+    boundaryMark.h=entity->getComponent<graphic>().h;
 }
 
 void collision::update() {
     boundaryMark.x=position->position.x;
     boundaryMark.y=position->position.y;
 
-    collider.x=position->position.x+offset_x;
-    collider.y=position->position.y+offset_y;
+    collider.x=position->center.x;
+    collider.y=position->center.y;
+
+    
 
     if(boundaryFlag==condone) {
         switch(withinBoundary(boundaryMark)) {
@@ -174,18 +173,23 @@ void collision::update() {
                 entity->getComponent<pos>().position.y=0;
                 break;
             case down:
-                entity->getComponent<pos>().position.y=game::h;
+                entity->getComponent<pos>().position.y=game::h-boundaryMark.h;
                 break;
             case left:
                 entity->getComponent<pos>().position.x=0;
                 break;
             case right:
-                entity->getComponent<pos>().position.x=game::w;
+                entity->getComponent<pos>().position.x=game::w-boundaryMark.w;
                 break;
             case inside:
                 break;
         }
     }
+
+    if(boundaryFlag==destroy) {
+        if(withinBoundary(boundaryMark)!=inside) entity->destroy();
+    }
+
 }
 
 behavior::behavior(float x, float y) {
@@ -199,14 +203,117 @@ void behavior::init() {
 }
 
 void behavior::update() {
-    dir=position->position.direction(*game::playerPos);
+    dir=position->center.direction(*game::playerPos);
     
     entity->getComponent<pos>().velocity=dir;
 }
 
-void behavior::draw() {
-    std::cout<<"enemy: \n"<<"x: "<<position->position.x<<" y: "<<position->position.y<<std::endl
-             <<"velocity-> x: "<<position->velocity.x<<" y: "<<position->velocity.y<<std::endl
-             <<"direction->x: "<<dir.x<<" y: "<<dir.y<<std::endl
-             <<"target->x: "<<target.x<<" y: "<<target.y<<std::endl;
+void behavior::draw() {}
+
+bool muzzle::fire;
+
+muzzle::muzzle(const int& flag_, const int& cooldown_) {
+    cooldown=cooldown_;
+    
+    flag=flag_;
+    switch(flag) {
+        case main_char_lv1:
+            numberOfMuzzles=1;
+            for(int i=0;i<numberOfMuzzles;i++) {
+                muzzlesDirection.push_back(vector{0, 0});
+            }
+            break;
+        case main_char_lv2:
+            break;
+        case main_char_lv3:
+            break;
+        case enemy_single_muzzle:
+            numberOfMuzzles=1;
+            for(int i=0;i<numberOfMuzzles;i++) {
+                muzzlesDirection.push_back(vector{0, 0});
+            }
+            break;
+        case enemy_2_muzzle_1_direction:
+            break;
+        case enemy_2_muzzle_side_pods:
+            break;
+        case enemy_4_muzzle_1_direction:
+            break;
+        case enemy_4_muzzle_spread:
+            break;
+        case enemy_4_muzzle_spread_spin:
+            break;
+    }
 }
+
+muzzle::~muzzle() {}
+
+vector muzzle::direcion() const {return muzzlesDirection[0];}
+
+void muzzle::init() {
+    position=&entity->getComponent<pos>();
+    numberOfMuzzles=0;
+    countCD=0;
+    shoot=false;
+}
+
+void muzzle::update() {
+    switch(flag) {
+        case main_char_lv1:
+            muzzlesDirection[0]=position->center.direction(keyboardHandler::mousePos);
+            if(countCD==0&&fire) {
+                countCD=cooldown;
+                shoot=true;
+            }
+            else if(countCD!=0) {
+                countCD--;
+                
+                shoot=false;
+            }
+            else shoot=false;
+
+            break;
+        case main_char_lv2:
+            break;
+        case main_char_lv3:
+            break;
+        case enemy_single_muzzle:
+            muzzlesDirection[0]=position->center.direction(*game::playerPos);
+
+            if(countCD==0) {
+                countCD=cooldown; 
+                shoot=true;
+            }
+            else {
+                countCD--;
+                shoot=false;
+            }
+
+            break;
+        case enemy_2_muzzle_1_direction:
+            break;
+        case enemy_2_muzzle_side_pods:
+            break;
+        case enemy_4_muzzle_1_direction:
+            break;
+        case enemy_4_muzzle_spread:
+            break;
+        case enemy_4_muzzle_spread_spin:
+            break;
+    }
+
+}
+
+projectile::projectile(const float& speed_, const vector& dir) {speed=speed_; direction=dir;}
+
+projectile::~projectile() {}
+
+void projectile::init() {
+    position=&entity->getComponent<pos>();
+    position->velocity=direction;
+    collider=&entity->getComponent<collision>();
+    position->setSpeed(speed);
+}
+
+void projectile::update() {}
+    

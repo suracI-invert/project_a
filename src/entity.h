@@ -122,7 +122,9 @@ class manager{
                 v.erase(std::remove_if(v.begin(), v.end(), [i](entity* e ){return !e->active || !e->hasGroup(i);}), v.end());
             }
             e_list.erase(std::remove_if(e_list.begin(), e_list.end(),[](std::unique_ptr<entity>& e)->bool{return !e->active;}), e_list.end());
+            
         }
+
 
         void addToGroup(entity* e, group g) {
              e_group[g].emplace_back(e);
@@ -138,6 +140,7 @@ class manager{
             e_list.emplace_back(std::move(ptr));
             return *e;
         }
+
 };
 
 #endif
