@@ -3,7 +3,7 @@
 #include<vector>
 #include<string>
 
-const int FPS=144;
+const int FPS=60;
 const int frameDelay=1000/FPS;
 
 Uint64 frameStart;
