@@ -16,7 +16,8 @@ enum boundaryCollision {
 
 
 float calculateDistance(const float& ax, const float& ay, const float& bx, const float& by);
-bool collisionCheck(const circle& a, const circle& b);
+bool collisionCheckCC(const circle& a, const circle& b);
+bool collisionCheckCR(const circle& a, const SDL_Rect& b);
 int withinBoundary(const SDL_Rect& boundaryMark);
 
 

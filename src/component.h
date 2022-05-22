@@ -5,6 +5,7 @@
 #include"texture.h"
 #include"collision.h"
 #include"obj.h"
+#include"fx.h"
 
 
 class Texture;
@@ -30,6 +31,8 @@ class pos:public component{
         pos(const float& x_, const float& y_, const float& offset_center_x, const float& offset_center_y);
 
         void setSpeed(float speed_);
+
+        void stutter();
         
         ~pos() override;
 
@@ -47,15 +50,19 @@ class graphic:public component{
         SDL_Rect src, dest;
 
         bool rotate;
+        int frame=1;
+        int speed=100;
         double angle;
 
         SDL_Point center;
     public:
         int w, h;
+        bool animated;
 
         graphic()=default;
 
         graphic(const std::string& id, bool rotate_=false);
+        graphic(const std::string& id, int frame_, int speed_, bool animated, bool rotate_=false);
         
         ~graphic() override {}
 
@@ -86,8 +93,12 @@ enum boundaryInteractions{
 class collision:public component{
     private:    
         float r;
-        int boundaryFlag;
+        
+        std::shared_ptr<Texture> hitfx;
     public:
+        int boundaryFlag;
+        bool hit;
+        int iframe=0;
         circle collider;
         SDL_Rect boundaryMark;
         pos* position;
@@ -100,12 +111,21 @@ class collision:public component{
         void update() override;
 };
 
+enum behaviorFlag{
+    outside_the_stage,
+    into_the_stage,
+    random_movement,
+    speedup_movement,
+};
+
 class behavior:public component{
     private:
         pos* position;
-        vector dir;
         vector target;
+        int duration;
     public:
+        int flag;
+        vector dir;
         behavior(float x=0, float y=0);
         
         void init() override;
@@ -130,14 +150,15 @@ class muzzle:public component{
     private:
         pos* position;
         int numberOfMuzzles;
-        std::vector<vector> muzzlesDirection;
+        
 
-        int flag;
         unsigned int cooldown;
         unsigned int countCD;
         
-        
+        int deg;
     public:
+        int flag;
+        std::vector<vector> muzzlesDirection;
         static bool fire;
         bool shoot;
         static bool player_fire;
@@ -165,6 +186,21 @@ class projectile:public component{
         void init() override;
         void update();
 };
+
+class state:public component{
+    private:
+        int tempHP;
+    public:
+        int hp;
+        bool hp_down;
+
+        state(const int& hp_);
+        ~state() override;
+        bool HPdown();
+        void init() override;
+        void update() override;
+};
+
 
 
 #endif

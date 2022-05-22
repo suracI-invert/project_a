@@ -49,8 +49,9 @@ class vector{
         vector normalize();
         vector direction(const vector& other);
         float dotProduct(const vector& other);
-        float length() const;
+        float distance(const vector& other);
         float getDeltaRad(const vector& other);
 };
+
 
 #endif

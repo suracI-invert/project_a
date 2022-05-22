@@ -16,6 +16,11 @@ pos::pos(const float& x_, const float& y_, const float& offset_center_x, const f
 
 void pos::setSpeed(float speed_) {speed=speed_;}
 
+void pos::stutter() {
+    velocity=entity->getComponent<behavior>().dir;
+    position=position+velocity.normalize()*(float)(-5.5);
+}
+
 void pos::init() {
     velocity.x=0;
     velocity.y=0;
@@ -32,15 +37,28 @@ void pos::update() {
 pos::~pos() {}
 
 graphic::graphic(const std::string& id, bool rotate_) {
-    texture=game::assetManager->GetTexture(id);
+    texture=game::assetManager->getTexture(id);
+    
 
     src.w=texture->getWidth();
     src.h=texture->getHeight();
 
     dest.w=texture->getWidth();
     dest.h=texture->getHeight();
-
+    animated=false;
     rotate=rotate_;
+}
+
+graphic::graphic(const std::string& id, int frame_, int speed_, bool animated_, bool rotate_) {
+    texture=game::assetManager->getTexture(id);
+
+    frame=frame_;
+    speed=speed_;
+    animated=animated_;
+    rotate=rotate_;
+
+    dest.w=texture->getWidth()/frame;
+    dest.h=texture->getHeight();
 }
 
 void graphic::init() {
@@ -54,9 +72,11 @@ void graphic::init() {
     angle=90;
     center.x=position->offset_x;
     center.y=position->offset_y;
+
 }
 
 void graphic::update() {
+
     dest.x=(int)position->position.x;
     dest.y=(int)position->position.y;
 
@@ -156,6 +176,7 @@ void collision::init() {
     collider.r=r;
     boundaryMark.w=entity->getComponent<graphic>().w;
     boundaryMark.h=entity->getComponent<graphic>().h;
+    hit=false;
 }
 
 void collision::update() {
@@ -186,10 +207,33 @@ void collision::update() {
         }
     }
 
-    if(boundaryFlag==destroy) {
-        if(withinBoundary(boundaryMark)!=inside) entity->destroy();
+    if (std::find(game::m->getGroup(enemies).begin(), game::m->getGroup(enemies).end(), entity)!=game::m->getGroup(enemies).end()) {
+        for(auto& p: game::m->getGroup(friendlyFire)) {
+            if(collisionCheckCC(entity->getComponent<collision>().collider, p->getComponent<collision>().collider)) {
+                entity->getComponent<state>().hp--;
+                entity->getComponent<pos>().stutter();
+                p->destroy();
+            }
+        }
     }
 
+    if (std::find(game::m->getGroup(players).begin(), game::m->getGroup(players).end(), entity)!=game::m->getGroup(players).end()) {
+        for(auto& p: game::m->getGroup(projectiles)) {
+            if(collisionCheckCC(entity->getComponent<collision>().collider, p->getComponent<collision>().collider)) {
+                entity->getComponent<state>().hp--;
+                p->destroy(); 
+            }
+        }
+    }
+
+    if (std::find(game::m->getGroup(players).begin(), game::m->getGroup(players).end(), entity)!=game::m->getGroup(players).end()) {
+        for(auto& e: game::m->getGroup(enemies)) {
+            if(collisionCheckCC(entity->getComponent<collision>().collider, e->getComponent<collision>().collider)) {
+                entity->getComponent<state>().hp--;
+                e->destroy(); 
+            }
+        }
+    }
 }
 
 behavior::behavior(float x, float y) {
@@ -199,13 +243,60 @@ behavior::behavior(float x, float y) {
 
 void behavior::init() {
     position=&entity->getComponent<pos>();
+    flag=outside_the_stage;
     target={0, 0};
+    srand(time(nullptr));
 }
 
 void behavior::update() {
+    static float move;
+    static int speed;
+    switch(flag) {
+        case outside_the_stage:
+            speed=3;
+            position->setSpeed(speed);
+            if(position->position.x<100) {
+                position->velocity.x=1;
+            }
+            if(position->position.x>game::w-100) {
+                position->velocity.x=-1;
+            }
+            if(position->position.y<50) {
+                position->velocity.y=1;
+            }
+            if(position->position.y>game::h-100) {
+                position->velocity.y=-1;
+            }
+            if(position->position.x>=100 && position->position.x<=game::w-100 && position->position.y>=50 && position->position.y<=game::h-50) {flag=into_the_stage; entity->getComponent<collision>().boundaryFlag=condone;}
+            break;
+        case into_the_stage:
+            speed--;
+            if(speed==0) {
+                flag=random_movement;
+                duration=500;
+            }
+            break;
+        case random_movement:
+            speed=2;
+            position->setSpeed(speed);
+            if(duration%100==0) {
+                move=(float)(-1.000)+(float)(rand()/(float)RAND_MAX);
+            }
+            position->velocity.x=1*cosf(2*PI*move);
+            position->velocity.y=1*sinf(2*PI*move);
+            duration--;
+            if(duration==0) {flag=speedup_movement; duration=100; speed=3;}
+
+        case speedup_movement:
+            position->setSpeed(speed);
+            duration--;
+            if(duration==0) {flag==random_movement; duration=500;}
+
+    }
+
+
+
     dir=position->center.direction(*game::playerPos);
-    
-    entity->getComponent<pos>().velocity=dir;
 }
 
 void behavior::draw() {}
@@ -236,12 +327,20 @@ muzzle::muzzle(const int& flag_, const int& cooldown_) {
         case enemy_2_muzzle_1_direction:
             break;
         case enemy_2_muzzle_side_pods:
+            numberOfMuzzles=2;
+            for(int i=0;i<numberOfMuzzles;i++) {
+                muzzlesDirection.push_back(vector{0, 0});
+            }
             break;
         case enemy_4_muzzle_1_direction:
             break;
         case enemy_4_muzzle_spread:
             break;
         case enemy_4_muzzle_spread_spin:
+            numberOfMuzzles=4;
+            for(int i=0;i<numberOfMuzzles;i++) {
+                muzzlesDirection.push_back(vector{0, 0});
+            }
             break;
     }
 }
@@ -255,6 +354,7 @@ void muzzle::init() {
     numberOfMuzzles=0;
     countCD=0;
     shoot=false;
+    deg=90;
 }
 
 void muzzle::update() {
@@ -293,18 +393,48 @@ void muzzle::update() {
         case enemy_2_muzzle_1_direction:
             break;
         case enemy_2_muzzle_side_pods:
+            muzzlesDirection[0]={cosf(degToRad((float)deg)), sinf(degToRad((float)deg))};
+            muzzlesDirection[1]={cosf(degToRad((float)deg+180)), sinf(degToRad((float)deg+180))};
+            if(countCD==0) {
+                countCD=cooldown; 
+                shoot=true;
+                deg+=10;
+                // deg=deg%360;
+            }
+            else {
+                countCD--;
+                shoot=false;
+            }
             break;
         case enemy_4_muzzle_1_direction:
             break;
         case enemy_4_muzzle_spread:
             break;
         case enemy_4_muzzle_spread_spin:
+            muzzlesDirection[0]={cosf(degToRad((float)deg)), sinf(degToRad((float)deg))};
+            muzzlesDirection[1]={cosf(degToRad((float)deg+90)), sinf(degToRad((float)deg+90))};
+            muzzlesDirection[2]={cosf(degToRad((float)deg+180)), sinf(degToRad((float)deg+180))};
+            muzzlesDirection[3]={cosf(degToRad((float)deg+270)), sinf(degToRad((float)deg+270))};
+            if(countCD==0) {
+                countCD=cooldown; 
+                shoot=true;
+                deg+=10;
+                // deg=deg%360;
+            }
+            else {
+                countCD--;
+                shoot=false;
+            }
             break;
     }
 
 }
 
-projectile::projectile(const float& speed_, const vector& dir) {speed=speed_; direction=dir;}
+projectile::projectile(const float& speed_, const vector& dir) {
+    speed=speed_; 
+    direction=dir;
+    
+}
 
 projectile::~projectile() {}
 
@@ -315,5 +445,34 @@ void projectile::init() {
     position->setSpeed(speed);
 }
 
-void projectile::update() {}
-    
+void projectile::update() {
+    if(collider->boundaryMark.x<0-collider->boundaryMark.w || 
+       collider->boundaryMark.x>game::h+collider->boundaryMark.x ||
+       collider->boundaryMark.y<0-collider->boundaryMark.h ||
+       collider->boundaryMark.y>game::w+collider->boundaryMark.h) 
+        entity->destroy();
+}
+
+state::state(const int& hp_) {
+    tempHP=hp_;
+    hp=hp_;
+    hp_down=false;
+}
+
+state::~state() {}
+
+bool state::HPdown() {
+    if(tempHP!=hp) {
+        tempHP=hp;
+        return true;
+    }
+    return false;
+}
+
+void state::init() {}
+
+void state::update() {
+    if(HPdown()) hp_down=true;
+    else hp_down=false;
+    if(hp==0) entity->destroy();
+}

@@ -138,6 +138,9 @@ vector vector::direction(const vector& otherPos) {
     return v;
 }
 
+float vector::distance(const vector& other) {
+    return sqrt((other.x-this->x)*(other.x-this->x)+(other.y-this->y)*(other.y-this->y));
+}
 
 double degToRad(const double deg) {
     return deg*(PI/180);

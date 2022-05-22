@@ -1,15 +1,16 @@
 #include"game.h"
+#include"infotemp.h"
 
-manager m;
 
-int count =0;
 
-entity& player=m.addEntity();
-entity& enemy1=m.addEntity();
-entity& enemy2=m.addEntity();
-entity& enemy3=m.addEntity();
 
-asset* game::assetManager=new asset(&m);
+
+
+manager* game::m=new manager;
+
+entity& player=game::m->addEntity();
+
+asset* game::assetManager=new asset(game::m);
 SDL_Renderer* game::renderer=nullptr;
 SDL_Event game::e;
 vector* game::playerPos;
@@ -21,6 +22,8 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     isRunning=true;
     // std::cout<<"runinng \n";
 
+    srand((unsigned int)time(0));
+    
     this->w=w;
     this->h=h;
 
@@ -43,51 +46,44 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     if(!window) throw std::runtime_error{std::string{"Unable create window: "}+SDL_GetError()};
     renderer=SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
     if(!renderer) throw std::runtime_error{std::string{"Unable create renderer: "}+SDL_GetError()};
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
+
+    assetManager->addTexture("start", "build/img/start.png");
+    assetManager->addTexture("endScreen", "build/img/end_screen.png");
+    assetManager->addTexture("live", "build/img/lives.png");
+
 
     assetManager->addTexture("player", "build/img/main.png");
-    assetManager->addTexture("enemy1", "build/img/enemy1.png");
-    assetManager->addTexture("bullet", "build/img/enemy1_bullet.png");
- 
+    assetManager->addTexture("enemy1", "build/img/enemy_1.png");
+    assetManager->addTexture("enemy2", "build/img/enemy_2.png");
+    assetManager->addTexture("enemy3", "build/img/enemy_3.png");
+    assetManager->addTexture("bullet", "build/img/bullet_1.png");
+    assetManager->addTexture("friendlyfire", "build/img/friendly_fire.png");
+    assetManager->addTexture("hitfx", "build/img/hit_fx.png");
+    assetManager->addTexture("destroyfx", "build/img/destroy_fx.png");
+    assetManager->addTexture("particle", "build/img/particle.png");
 
+    menu=assetManager->getTexture("start");
+    endScreen=assetManager->getTexture("endScreen");
+ 
     player.addComponent<pos>(1280/2, 720/2, 13, 38);
     player.addComponent<graphic>("player", true);
     player.addComponent<keyboardHandler>();
     player.addComponent<collision>(12, condone);
-    player.getComponent<pos>().setSpeed(1.5);
-    player.addComponent<muzzle>(main_char_lv1, 100);
+    player.getComponent<pos>().setSpeed(3);
+    player.addComponent<muzzle>(main_char_lv1, 10);
+    player.addComponent<state>(5);
     player.addGroup(players);
-
-
     
-    enemy1.addComponent<pos>(100, 100, 15, 15);
-    enemy1.addComponent<graphic>("enemy1", false);
-    enemy1.addComponent<collision>(15);
-    enemy1.addComponent<behavior>();
-    enemy1.addComponent<muzzle>(enemy_single_muzzle, 50);
-    enemy1.getComponent<pos>().setSpeed(0.5);
-    enemy1.addGroup(enemies);
-
-    enemy2.addComponent<pos>(200, 100, 15, 15);
-    enemy2.addComponent<graphic>("enemy1", false);
-    enemy2.addComponent<collision>(15);
-    enemy2.addComponent<behavior>();
-    enemy2.getComponent<pos>().setSpeed(0.5);
-    enemy2.addGroup(enemies);
-
-    enemy3.addComponent<pos>(100, 300, 15, 15);
-    enemy3.addComponent<graphic>("enemy1", false);
-    enemy3.addComponent<collision>(15);
-    enemy3.addComponent<behavior>();
-    enemy3.getComponent<pos>().setSpeed(0.5);
-    enemy3.addGroup(enemies);
 
     std::cout<<"init done! \n";
 }
 
+
 game::~game() {
     if(!isRunning) {
         // std::cout<<"end game \n";
+        delete(m);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         Mix_Quit();
@@ -102,41 +98,42 @@ void game::handleInput() {
         case SDL_QUIT:
             isRunning=false;
             break;
-        
         case SDL_KEYDOWN:
-            if(e.key.keysym.sym==SDLK_ESCAPE)
-                isRunning=false;
-                break;
+            if(e.key.keysym.sym==SDLK_ESCAPE) isRunning=false;
+            if(e.key.keysym.sym==SDLK_BACKSPACE) start=true;
+            break;
     }
 }
 
 void game::update() {
-    // std::cout<<"update! \n";
-    playerPos=&player.getComponent<pos>().position;
-    m.reset();
-    m.update();
-    // std::cout<<"player: \nx:"<<player.getComponent<pos>().position.x<<" y: "<<player.getComponent<pos>().position.x<<"\n";
-    if(enemy1.getComponent<muzzle>().shoot) {assetManager->createProjectile("bullet", 2, enemy1.getComponent<pos>().center, vector{5, 5}, 5, enemy1.getComponent<muzzle>().direcion(), true); std::cout<<"enemy fires \n";}
-    if(player.getComponent<muzzle>().shoot) assetManager->createProjectile("bullet", 2, player.getComponent<pos>().center, vector{5, 5}, 5, player.getComponent<muzzle>().direcion(), false);
-    
-    for(auto& e: m.getGroup(enemies)) {
-        if(collisionCheck(player.getComponent<collision>().collider, e->getComponent<collision>().collider)) {
-            isRunning=false;
-            std::cout<<"game end! \n";
+    if(start) {
+        if(m->getGroup(enemies).empty()) {
+            int tmpFlag=flag;
+            flag=assetManager->spawnWave(tmpFlag);
         }
-    }
 
-    for(auto& e: m.getGroup(projectiles)) {
-        if(collisionCheck(player.getComponent<collision>().collider, e->getComponent<collision>().collider)) {
-            isRunning=false;
-            std::cout<<"game end! \n";
-        }
-    }
+        playerPos=&player.getComponent<pos>().center;
 
-    for(auto& p:m.getGroup(friendlyFire)) {
-        for(auto& e:m.getGroup(enemies)) {
-            if(collisionCheck(p->getComponent<collision>().collider, e->getComponent<collision>().collider)) {e->destroy(); p->destroy(); std::cout<<"enemy destroyed!\n";}
+        m->reset();
+        m->update();
+
+        
+        for(auto& e:m->getGroup(enemies)) {
+            if(e->getComponent<muzzle>().shoot && e->getComponent<muzzle>().flag==3) assetManager->createProjectile("bullet", 3, e->getComponent<pos>().center-vector{14, 14}, vector{14, 14}, 12, e->getComponent<muzzle>().direcion(), true);
+            else if(e->getComponent<muzzle>().shoot && e->getComponent<muzzle>().flag==4) {
+                assetManager->createProjectile("bullet", 5, e->getComponent<pos>().center-vector{14, 14}, vector{14,14}, 12, e->getComponent<muzzle>().muzzlesDirection[0], true);
+                assetManager->createProjectile("bullet", 5, e->getComponent<pos>().center-vector{14, 14}, vector{14,14}, 12, e->getComponent<muzzle>().muzzlesDirection[1], true);
+            }
+            else if(e->getComponent<muzzle>().shoot && e->getComponent<muzzle>().flag==8) {
+                assetManager->createProjectile("bullet", 5, e->getComponent<pos>().center-vector{14, 14}, vector{14,14}, 12, e->getComponent<muzzle>().muzzlesDirection[0], true);
+                assetManager->createProjectile("bullet", 5, e->getComponent<pos>().center-vector{14, 14}, vector{14,14}, 12, e->getComponent<muzzle>().muzzlesDirection[1], true);
+                assetManager->createProjectile("bullet", 5, e->getComponent<pos>().center-vector{14, 14}, vector{14,14}, 12, e->getComponent<muzzle>().muzzlesDirection[2], true);
+                assetManager->createProjectile("bullet", 5, e->getComponent<pos>().center-vector{14, 14}, vector{14,14}, 12, e->getComponent<muzzle>().muzzlesDirection[3], true);
+            }
         }
+        if(player.getComponent<muzzle>().shoot) assetManager->createProjectile("friendlyfire", 7, player.getComponent<pos>().center, vector{13, 13}, 10, player.getComponent<muzzle>().direcion(), false);
+
+        if(m->getGroup(players).empty()) end=true;
     }
 }
 
@@ -144,12 +141,17 @@ void game::update() {
 void game::render() {
     // std::cout<<"render \n";
     SDL_RenderClear(renderer);
-    
-    for(auto& i:m.getGroup(players)) {i->draw();}
-    for(auto& i:m.getGroup(projectiles)) {i->draw();}
-    for(auto& i:m.getGroup(friendlyFire)) {i->draw();}
-    for(auto& i:m.getGroup(enemies)) {i->draw();}
-    
+
+    if(!start) {menu->renderOut(nullptr, nullptr);}
+    else {
+        for(auto& i:m->getGroup(players)) {i->draw();}
+        for(auto& i:m->getGroup(enemies)) {i->draw();}
+        for(auto& i:m->getGroup(projectiles)) {i->draw();}
+        for(auto& i:m->getGroup(friendlyFire)) {i->draw();}
+    }
+
+    if(end) {endScreen->renderOut(nullptr, nullptr);}
+
     SDL_RenderPresent(renderer);
 }
 
