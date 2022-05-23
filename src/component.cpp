@@ -216,21 +216,23 @@ void collision::update() {
             }
         }
     }
-
-    if (std::find(game::m->getGroup(players).begin(), game::m->getGroup(players).end(), entity)!=game::m->getGroup(players).end()) {
-        for(auto& p: game::m->getGroup(projectiles)) {
-            if(collisionCheckCC(entity->getComponent<collision>().collider, p->getComponent<collision>().collider)) {
-                entity->getComponent<state>().hp--;
-                p->destroy(); 
+    if(!game::m->getGroup(players).empty()) {
+        if (std::find(game::m->getGroup(players).begin(), game::m->getGroup(players).end(), entity)!=game::m->getGroup(players).end()) {
+            for(auto& p: game::m->getGroup(projectiles)) {
+                if(collisionCheckCC(entity->getComponent<collision>().collider, p->getComponent<collision>().collider)) {
+                    entity->getComponent<state>().hp--;
+                    p->destroy(); 
+                }
             }
         }
     }
-
-    if (std::find(game::m->getGroup(players).begin(), game::m->getGroup(players).end(), entity)!=game::m->getGroup(players).end()) {
-        for(auto& e: game::m->getGroup(enemies)) {
-            if(collisionCheckCC(entity->getComponent<collision>().collider, e->getComponent<collision>().collider)) {
-                entity->getComponent<state>().hp--;
-                e->destroy(); 
+    if(!game::m->getGroup(players).empty()) {
+        if (std::find(game::m->getGroup(players).begin(), game::m->getGroup(players).end(), entity)!=game::m->getGroup(players).end()) {
+            for(auto& e: game::m->getGroup(enemies)) {
+                if(collisionCheckCC(entity->getComponent<collision>().collider, e->getComponent<collision>().collider)) {
+                    entity->getComponent<state>().hp--;
+                    e->destroy(); 
+                }
             }
         }
     }

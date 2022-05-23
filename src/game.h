@@ -60,6 +60,7 @@ class game{
         int flag;
         std::shared_ptr<Texture> menu;
         std::shared_ptr<Texture> endScreen;
+        UI* health;
     public:
         static manager* m;
         static asset* assetManager;

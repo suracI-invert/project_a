@@ -5,9 +5,8 @@
 
 // #include"texture.h"
 // #include"obj.h"
-#include"game.h"
 
-// class Texture;
+class Texture;
 
 // constexpr int TOTAL_PARTICLES=25;
 
@@ -67,5 +66,18 @@
 // };
 
 void DrawCircle(int center_x, int center_y, int radius);
+
+class UI{
+    private:
+        Texture* texture;
+        int frame;
+        SDL_Rect src, dest;
+    public:
+        UI();
+        UI(int frame_, const char* path);
+        ~UI();
+        void update(int current);
+        void draw();
+};
 
 #endif

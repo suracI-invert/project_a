@@ -57,7 +57,7 @@ int Texture::getHeight() const {
 
 Texture::~Texture() {
     if(qTexture==nullptr) SDL_DestroyTexture(qTexture);
-    std::cout<<"free texture"<<std::endl;
+    // std::cout<<"free texture"<<std::endl;
 }
 
 

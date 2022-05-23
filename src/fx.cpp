@@ -1,4 +1,22 @@
 #include"fx.h"
+#include"texture.h"
+
+UI::UI(int frame_, const char* path) {
+   frame=frame_;
+   texture=new Texture{path};
+   dest={0, 0, texture->getWidth()/frame, texture->getHeight()};
+   src={};
+}
+UI::~UI() {
+   texture->~Texture();
+};
+
+void UI::update(int current) {
+   src={(texture->getWidth()/frame)*(current-1), 0, texture->getWidth()/frame, texture->getHeight()};
+}
+void UI::draw() {
+   texture->renderOut(&src, &dest);
+}
 
 
 // particle::particle(float x_, float y_) {
