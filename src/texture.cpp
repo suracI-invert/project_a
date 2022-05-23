@@ -33,6 +33,10 @@ Texture::Texture(const char* text, SDL_Color color ) {
 }
 #endif
 
+void Texture::setColor(Uint8 red, Uint8 green, Uint8 blue) {
+    SDL_SetTextureColorMod(qTexture, red, green, blue);
+}
+
 void Texture::renderOut(SDL_Rect* src, SDL_Rect* dest) {
     
     SDL_RenderCopy(game::renderer, qTexture, src, dest);

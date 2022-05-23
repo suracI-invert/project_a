@@ -30,6 +30,8 @@ class Texture {
         void renderOut(SDL_Rect* src, SDL_Rect* dest);
         void renderOut(SDL_Rect* src, SDL_Rect* dest, const double& angle, SDL_Point* center);
 
+        void setColor(Uint8 red, Uint8 green, Uint8 blue);
+
 
         int getWidth() const;
 

@@ -3,6 +3,8 @@
 
 #include<iostream>
 #include<vector>
+#include<cstdlib>
+#include<ctime>
 
 #include<SDL.h>
 #include<SDL_image.h>
@@ -13,12 +15,37 @@
 #include"entity.h"
 #include"obj.h"
 #include"asset.h"
+#include"fx.h"
+
+// enum gameState{
+//     gameIntro,
+//     gameEnd,
+//     firstWave,
+//     secondWave,
+//     thirdWave,
+//     fourthWave,
+//     fifthWave
+// };
+
+enum wave{
+    firstWave_1,
+    firstWave_2,
+    secondWave_1,
+    secondWave_2,
+    thirdWave_1,
+    thirdWave_2,
+    fourthWave_1,
+    fourthWave_2,
+    fifthWave_
+};
+
 
 enum groupLabels:std::size_t {
     players, 
     enemies,
     projectiles,
-    friendlyFire
+    friendlyFire,
+    hitFx
 };
 
 
@@ -28,11 +55,15 @@ class game{
     private:
         bool isRunning;
         SDL_Window* window;
-        
+        bool start=false;
+        bool end=false;
+        int flag;
+        std::shared_ptr<Texture> menu;
+        std::shared_ptr<Texture> endScreen;
     public:
+        static manager* m;
         static asset* assetManager;
         static vector* playerPos;
-        static std::vector<circle*> threatColliders;
         static int w;
         static int h;
         static SDL_Event e;
