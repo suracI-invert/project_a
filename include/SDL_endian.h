@@ -57,7 +57,6 @@ _m_prefetch(void *__P)
 
 #ifndef SDL_BYTEORDER           /* Not defined in SDL_config.h? */
 #ifdef __linux__
-#include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
 #elif defined(__OpenBSD__)
 #include <endian.h>
