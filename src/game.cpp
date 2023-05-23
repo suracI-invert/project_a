@@ -1,5 +1,9 @@
 #include"game.hpp"
 
+
+SDL_Renderer* game::renderer = nullptr;
+SDL_Window* game::window = nullptr;
+
 game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     auto const sdl_result=SDL_Init(SDL_INIT_EVERYTHING);
 	if(sdl_result!=0) throw std::runtime_error{std::string{"Unable to init sdl: "}+SDL_GetError()};
@@ -22,5 +26,12 @@ game::game(const char* title, int x, int y, int w, int h, bool fullscreen) {
     if(!renderer) throw std::runtime_error{std::string{"Unable create renderer: "}+SDL_GetError()};
     SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
 
-    
+}
+
+game::~game() {
+    if (window) SDL_DestroyWindow(window);
+    if (renderer) SDL_DestroyRenderer(renderer);
+    Mix_CloseAudio();
+    IMG_Quit();
+    SDL_Quit();
 }

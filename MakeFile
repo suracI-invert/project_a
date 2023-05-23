@@ -1,7 +1,13 @@
 CC=g++
-LIBFLAG=-Iinclude -Llib
+LIBFLAG=-Iinclude -Llib -Isrc
 FLAGS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
+TARGET=game.exe
+SRCDIR = src
+SRCS = $(wildcard $(SRCDIR)/*.cpp)
 
 
-all:
-	$(CC) $(LIBFLAG) -o game.exe src/*.cpp $(FLAGS)
+all: 
+	$(CC) $(LIBFLAG) -o game.exe src/*.cpp  $(FLAGS)
+
+clean:
+	rm -f $(TARGET)
