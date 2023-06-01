@@ -1,5 +1,6 @@
 #pragma once
 
+#include<cstdint>
 #include<iostream>
 #include<cassert>
 #include<queue>
@@ -9,8 +10,8 @@
 #include<memory>
 #include<set>
 
-using Entity = std::uint32_t;
-using ComponentType = std::uint8_t;
+using Entity = uint32_t;
+using ComponentType = uint8_t;
 
 const Entity MAX_ENTITIES = 5000;
 const ComponentType MAX_COMPONENTS = 32;
@@ -269,7 +270,7 @@ private:
 	std::unordered_map<const char*, std::shared_ptr<System>> mSystems{};
 };
 
-class Manager
+class ECS
 {
 public:
 	void init()
