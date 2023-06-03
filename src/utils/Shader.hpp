@@ -1,6 +1,8 @@
 #pragma once
 
 #include<glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include<iostream>
 #include<fstream>
@@ -20,9 +22,15 @@ class Shader {
 
         void use();
 
-        void setBool(const std::string &name, bool value) const;
-        void setInt(const std::string &name, int value) const;
-        void setFloat(const std::string &name, float value) const;
+        void setInt(const char* name, int value, bool use = false);
+        void setFloat(const char* name, float value, bool use = false);
+        void setVec2f(const char* name, float x, float y, bool use = false);
+        void setVec2f(const char* name, const glm::vec2& value, bool use = false);
+        void setVec3f(const char* name, float x, float y, float z, bool use = false);
+        void setVec3f(const char* name, const glm::vec3& value, bool use = false);
+        void setVec4f(const char* name, float x, float y, float z, float w, bool use = false);
+        void setVec4f(const char* name, const glm::vec4& value, bool use = false);
+        void setMatrix4(const char* name, const glm::mat4& value, bool use = false);
 
         ~Shader();
 

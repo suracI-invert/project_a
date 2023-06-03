@@ -1,25 +1,27 @@
 #include"game.hpp"
 
-#include"components/Color.hpp"
-#include"components/Gravity.hpp"
-#include"components/RigidBody.hpp"
-#include"components/Transform.hpp"
+#include"utils/shader.hpp"
+#include"utils/Texture.hpp"
+#include"utils/Services.hpp"
 
 #include"systems/PhysicsSystem.hpp"
 #include"systems/RenderSystem.hpp"
 
-#include<utils/shader.hpp>
-#include<utils/Texture.hpp>
-#include<utils/Services.hpp>
-
 #include<chrono>
 #include<random>
+
+#include"components/Renderable.hpp"
+#include"components/Gravity.hpp"
+#include"components/RigidBody.hpp"
+#include"components/Transform.hpp"
+
 
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
+
 
 const unsigned int WIDTH = 1280;
 const unsigned int HEIGHT = 1024;
@@ -58,6 +60,8 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraFront * cameraSpeed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) cameraPos += cameraUp * cameraSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) cameraPos -= cameraUp * cameraSpeed * deltaTime;
 }
 
 void mouse_callback(GLFWwindow* window, double x, double y) {
@@ -87,6 +91,10 @@ void mouse_callback(GLFWwindow* window, double x, double y) {
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
     cameraFront = glm::normalize(direction);
+
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, direction));
+    cameraUp = glm::cross(direction, cameraRight);
 }
 
 void scroll_callback(GLFWwindow* window, double x, double y) {
@@ -96,79 +104,6 @@ void scroll_callback(GLFWwindow* window, double x, double y) {
 }
 
 int main(int argc, char** argv) {
-    // game gameWorld = game{"test", 50, 50, 1280, 720, false};
-    // manager.init();
-    // std::cout<<"123";
-    // manager.RegisterComponent<Gravity>();
-    // manager.RegisterComponent<Transform>();
-    // manager.RegisterComponent<RigidBody>();
-    // manager.RegisterComponent<Color>();
-    
-    // auto physicsSystem = manager.RegisterSystem<PhysicsSystem>();
-    // {
-    //     Signature signature;
-    //     signature.set(manager.GetComponentType<Gravity>());
-    //     signature.set(manager.GetComponentType<Transform>());
-    //     signature.set(manager.GetComponentType<RigidBody>());
-    //     manager.SetSystemSignature<PhysicsSystem>(signature);
-    // }
-    // physicsSystem->init();
-
-    // auto renderSystem = manager.RegisterSystem<RenderSystem>();
-    // {
-    //     Signature signature;
-    //     signature.set(manager.GetComponentType<Transform>());
-    //     signature.set(manager.GetComponentType<Color>());
-    //     manager.SetSystemSignature<RenderSystem>(signature);
-    // }
-
-    // renderSystem->init();
-
-    // std::vector<Entity> entities(1);
-
-    // std::default_random_engine generator;
-	// std::uniform_real_distribution<float> randPosition(0.0f, 1900.0f);
-	// std::uniform_real_distribution<float> randRotation(0.0f, 3.0f);
-	// std::uniform_real_distribution<float> randScale(500.0f, 1000.0f);
-	// std::uniform_int_distribution<uint8_t> randColor(0, 255);
-
-    // float scale = randScale(generator);
-
-    // for (auto& entity : entities) {
-    //     entity = manager.CreateEntity();
-    //     manager.AddComponent<Gravity>(entity, {.g = 10});
-    //     manager.AddComponent<Transform>(
-    //         entity, 
-    //         {
-    //             .position = vec(randPosition(generator), 0.0f),
-    //             .rotation = 0,
-    //             .scale = vec(scale, scale)
-    //         }
-    //     );
-    //     manager.AddComponent<RigidBody>(
-    //         entity, 
-    //         {
-    //             .velocity = vec(),
-    //             .acceleration = vec()
-    //         }
-    //     );
-    //     manager.AddComponent<Color>(
-    //         entity,
-    //         {
-    //             .r = randColor(generator),
-    //             .g = randColor(generator),
-    //             .b = randColor(generator),
-    //             .a = 0xff
-    //         }
-    //     );
-    // }
-
-    // float dt = 0.0f;
-
-    // bool quit = false;
-
-    // SDL_Event e;
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -197,130 +132,81 @@ int main(int argc, char** argv) {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+    Game game(WIDTH, HEIGHT);
+    game.init();
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    ECS::init();
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  -1.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
-
-    // unsigned int indices[] = {
-    //     0, 1, 3,
-    //     1, 2, 3
-    // };
-
-
-
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // ECS::RegisterComponent<Gravity>();
+    ECS::RegisterComponent<Transform>();
+    ECS::RegisterComponent<RigidBody>();
+    ECS::RegisterComponent<Renderable>();
     
+    auto physicsSystem = ECS::RegisterSystem<PhysicsSystem>();
+    {
+        Signature signature;
+        // signature.set(ECS::GetComponentType<Gravity>());
+        signature.set(ECS::GetComponentType<Transform>());
+        signature.set(ECS::GetComponentType<RigidBody>());
+        ECS::SetSystemSignature<PhysicsSystem>(signature);
+    }
+    physicsSystem->init();
 
-    //position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    //texture attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
+    auto renderSystem = ECS::RegisterSystem<RenderSystem>();
+    {
+        Signature signature;
+        signature.set(ECS::GetComponentType<Transform>());
+        signature.set(ECS::GetComponentType<Renderable>());
+        ECS::SetSystemSignature<RenderSystem>(signature);
+    }
+    renderSystem->init(Services::getShader("default"));
 
-    Services::loadShader("src/shader/vertex.glsl", "src/shader/fragment.glsl", "default");
-    Services::loadTexture("build/img/container.jpg", false, "container");
-    Services::loadTexture("build/img/Inazuma_Shogunate.png", true, "icon");
+    Entity entities[10];
 
-    Shader* shader = Services::getShader("default");
+    std::default_random_engine generator;
+	std::uniform_real_distribution<float> randPositionX(0.0f, 5.0f);
+	std::uniform_real_distribution<float> randPositionY(0.0f, 5.0f);
+	std::uniform_real_distribution<float> randPositionZ(-5.0f, 5.0f);
+	std::uniform_real_distribution<float> randRotation(5.0f, 20.0f);
+	std::uniform_real_distribution<float> randScale(1.0f, 10.0f);
 
-    shader->use();
-    glUniform1i(glGetUniformLocation(shader->id, "texture1"), 0);
-    glUniform1i(glGetUniformLocation(shader->id, "texture2"), 1);
-    // glUniform1f(glGetUniformLocation(shader->id, "mixtexture"), 0.2);
+    float scale = randScale(generator);
 
-
-
+    for (auto& entity : entities) {
+        entity = ECS::CreateEntity();
+        // ECS::AddComponent<Gravity>(entity, {.g = 10});
+        ECS::AddComponent<Transform>(
+            entity, 
+            {
+                .position = glm::vec3(randPositionX(generator), randPositionY(generator), randPositionZ(generator)),
+                .rotation = randRotation(generator),
+                .scale = scale
+            }
+        );
+        ECS::AddComponent<RigidBody>(
+            entity, 
+            {
+                .velocity = glm::vec3(),
+                .acceleration = 0.0f
+            }
+        );
+        ECS::AddComponent<Renderable>(
+            entity, {Services::getTexture("container")}
+        );
+    }
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader->use();
-
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        glUniformMatrix4fv(glGetUniformLocation(shader->id, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        
         
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glUniformMatrix4fv(glGetUniformLocation(shader->id, "view"), 1, GL_FALSE, glm::value_ptr(view));
         
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, Services::getTexture("container")->id);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, Services::getTexture("icon")->id);
+        physicsSystem->update(lastFrame);
+        renderSystem->update(lastFrame, view, fov, WIDTH, HEIGHT);
 
-        glBindVertexArray(VAO);
-        for (unsigned int i = 0; i < 10; i++) {
-            glm::mat4 model = glm::rotate(
-                glm::translate(glm::mat4(1.0f), cubePositions[i]), 
-                (float)glfwGetTime() * glm::radians(20.0f * (i + 1)), 
-                glm::vec3(0.5f, 1.0f, 0.5f));
-            glUniformMatrix4fv(glGetUniformLocation(shader->id, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -329,24 +215,6 @@ int main(int argc, char** argv) {
         lastFrame = glfwGetTime();
     }
 
-
-
-    // while (!quit) {
-    //     // while (SDL_PollEvent(&e) != 0) {
-    //     //     if (e.type == SDL_QUIT) quit = true;
-    //     // }
-    //     // auto startTime = std::chrono::high_resolution_clock::now();
-    //     // physicsSystem->update(dt);
-        
-    //     // renderSystem->update(dt);
-    //     // auto stopTime = std::chrono::high_resolution_clock::now();
-    //     // dt = std::chrono::duration<float, std::chrono::seconds::period>(stopTime - startTime).count();
-
-    // }
-
-    // gameWorld.~game();
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
     glfwTerminate();
     return 0;
 }

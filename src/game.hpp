@@ -1,19 +1,24 @@
-// #pragma once
+#pragma once
 
-// #include<iostream>
+#include<iostream>
 
-// #include<SDL.h>
-// #include<SDL_image.h>
-// #include<SDL_mixer.h>
+#include"ecs.hpp"
 
-// #include"ecs.hpp"
+#include<glm/glm.hpp>
+#include<glm/gtc/type_ptr.hpp>
 
-// class game {
-//     private:
-//     public:
-//         static SDL_Renderer* renderer;
-//         static SDL_Window* window;
+#include"utils/Services.hpp"
 
-//         game(const char* title, int x, int y, int w, int h, bool fullscreen);
-//         ~game();
-// };
+class Game {
+    public:
+        unsigned int WIDTH, HEIGHT;
+
+
+        Game(unsigned int width, unsigned int height);
+        ~Game();
+
+        void init();
+        void processInput(float dt);
+        void update(float dt);
+        void render(float dt, const glm::mat4& view, float fov);
+};

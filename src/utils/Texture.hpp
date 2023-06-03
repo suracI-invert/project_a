@@ -23,4 +23,6 @@ class Texture {
 
         Texture(const char* path, bool alpha);
         ~Texture();
+
+        void bind() const;
 };

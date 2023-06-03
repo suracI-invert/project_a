@@ -1,21 +1,23 @@
-// #include"physicsSystem.hpp"
+#include"physicsSystem.hpp"
 
-// #include"Transform.hpp"
-// #include"RigidBody.hpp"
-// #include"Gravity.hpp"
+#include"components/Transform.hpp"
+#include"components/RigidBody.hpp"
+#include"components/Gravity.hpp"
 
-// extern Manager manager;
+void PhysicsSystem::init() {};
 
-// void PhysicsSystem::init() {};
+void PhysicsSystem::update(float dt) {
+    unsigned int i = 0;
+    for (auto const& entity : entities) {
+        i++;
+        auto& rigidBody = ECS::GetComponent<RigidBody>(entity);
+        auto& transform = ECS::GetComponent<Transform>(entity);
+        // const auto& gravity = ECS::GetComponent<Gravity>(entity);
 
-// void PhysicsSystem::update(float dt) {
-//     for (auto const& entity : entities) {
-//         auto& rigidBody = manager.GetComponent<RigidBody>(entity);
-//         auto& transform = manager.GetComponent<Transform>(entity);
-//         const auto& gravity = manager.GetComponent<Gravity>(entity);
+        // rigidBody.acceleration = gravity.g;
+        transform.position += rigidBody.velocity * dt;
+        rigidBody.velocity.y += rigidBody.acceleration;
 
-//         rigidBody.acceleration = vec(gravity.g, gravity.g);
-//         transform.position += rigidBody.velocity * dt;
-//         rigidBody.velocity += rigidBody.acceleration * dt;
-//     }
-// }
+        transform.rotation = dt * i;
+    }
+}

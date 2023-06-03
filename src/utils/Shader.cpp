@@ -46,9 +46,49 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 
 void Shader::use() {glUseProgram(id);}
 
-void Shader::setBool(const std::string &name, bool value) const {glUniform1d(glGetUniformLocation(id, name.c_str()), (int) value);}
-void Shader::setInt(const std::string &name, int value) const {glUniform1d(glGetUniformLocation(id, name.c_str()), value);}
-void Shader::setFloat(const std::string &name, float value) const {glUniform1d(glGetUniformLocation(id, name.c_str()), value);}
+void Shader::setInt(const char* name, int value, bool use) {
+    if (use) this->use();
+    glUniform1d(glGetUniformLocation(id, name), value);
+}
+void Shader::setFloat(const char* name, float value, bool use) {
+    if (use) this->use();
+    glUniform1d(glGetUniformLocation(id, name), value);
+}
+
+void Shader::setVec2f(const char* name, float x, float y, bool use) {
+    if (use) this->use();
+    glUniform2f(glGetUniformLocation(id, name), x, y);
+}
+
+void Shader::setVec2f(const char* name, const glm::vec2& value, bool use) {
+    if (use) this->use();
+    glUniform2f(glGetUniformLocation(id, name), value.x, value.y);
+}
+
+void Shader::setVec3f(const char* name, float x, float y, float z, bool use) {
+    if (use) this->use();
+    glUniform3f(glGetUniformLocation(id, name), x, y, z);
+}
+
+void Shader::setVec3f(const char* name, const glm::vec3& value, bool use) {
+    if (use) this->use();
+    glUniform3f(glGetUniformLocation(id, name), value.x, value.y, value.z);
+}
+
+void Shader::setVec4f(const char* name, float x, float y, float z, float w, bool use) {
+    if (use) this->use();
+    glUniform4f(glGetUniformLocation(id, name), x, y, z, w);
+}
+
+void Shader::setVec4f(const char* name, const glm::vec4& value, bool use) {
+    if (use) this->use();
+    glUniform4f(glGetUniformLocation(id, name), value.x, value.y, value.z, value.w);
+}
+
+void Shader::setMatrix4(const char* name, const glm::mat4& value, bool use) {
+    if (use) this->use();
+    glUniformMatrix4fv(glGetUniformLocation(id, name), 1, false, glm::value_ptr(value));
+}
 
 std::string Shader::readfile(const char* file_path) {
     std::string content;

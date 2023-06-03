@@ -1,15 +1,18 @@
-// #pragma once
+#pragma once
 
-// #include"ecs.hpp"
-// #include"game.hpp"
-// #include"vec.hpp"
+#include"ecs.hpp"
+#include"game.hpp"
 
-// #include"Color.hpp"
+#include<glad/glad.h>
+#include<glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-// void drawCircle(SDL_Renderer* renderer, vec center, float radius, Color color);
-
-// class RenderSystem : public System {
-//     public:
-//         void init();
-//         void update(float dt);
-// };
+class RenderSystem : public System {
+    private:
+        Shader* shader;
+        unsigned int quadVAO;
+    public:
+        void init(Shader* shader);
+        void update(float dt, const glm::mat4& view, float fov, unsigned int WIDTH, unsigned int HEIGHT);
+        ~RenderSystem();
+};

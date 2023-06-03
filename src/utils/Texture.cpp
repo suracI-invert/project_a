@@ -22,9 +22,15 @@ Texture::Texture(const char* path, bool alpha) {
     glTexImage2D(GL_TEXTURE_2D, 0, this->internal_format, this->width, this->height, 0, this->image_format, GL_UNSIGNED_BYTE, data);
 
     stbi_image_free(data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Texture::~Texture() {
     std::cout<<"Texture released\n";
     glDeleteTextures(1, &this->id);
+}
+
+void Texture::bind() const {
+    glBindTexture(GL_TEXTURE_2D, this->id);
 }
