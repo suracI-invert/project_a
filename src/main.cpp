@@ -24,6 +24,8 @@
 const unsigned int WIDTH = 1280;
 const unsigned int HEIGHT = 1024;
 
+bool KEYS[1024];
+
 const float sensitivity = 0.1f;
 const float cameraSpeed = 5.0f;
 
@@ -50,16 +52,26 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraFront * cameraSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraFront * cameraSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) cameraPos += cameraUp * cameraSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) cameraPos -= cameraUp * cameraSpeed * deltaTime;
+    if (key >= 0 && key < 1024) {
+        if (action == GLFW_PRESS) {
+            KEYS[key] = true;
+        } else if (action == GLFW_RELEASE) {
+            KEYS[key] = false;
+        }
+    }
+}
+
+void processInput() {
+    if (KEYS[GLFW_KEY_W]) cameraPos += cameraFront * cameraSpeed * deltaTime;
+    if (KEYS[GLFW_KEY_S]) cameraPos -= cameraFront * cameraSpeed * deltaTime;
+    if (KEYS[GLFW_KEY_D]) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+    if (KEYS[GLFW_KEY_A]) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+    if (KEYS[GLFW_KEY_SPACE]) cameraPos += cameraUp * cameraSpeed * deltaTime;
+    if (KEYS[GLFW_KEY_LEFT_CONTROL]) cameraPos -= cameraUp * cameraSpeed * deltaTime;
 }
 
 void mouse_callback(GLFWwindow* window, double x, double y) {
@@ -127,6 +139,7 @@ int main(int argc, char** argv) {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -194,7 +207,7 @@ int main(int argc, char** argv) {
     }
 
     while (!glfwWindowShouldClose(window)) {
-        processInput(window);
+        processInput();
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
