@@ -1,5 +1,3 @@
-#include"game.hpp"
-
 #include"utils/shader.hpp"
 #include"utils/Texture.hpp"
 #include"utils/Services.hpp"
@@ -132,8 +130,8 @@ int main(int argc, char** argv) {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    Game game(WIDTH, HEIGHT);
-    game.init();
+    Services::loadShader("src/shader/vertex.glsl", "src/shader/fragment.glsl", "default");
+    Services::loadTexture("build/img/container.jpg", false, "container");
 
     ECS::init();
 

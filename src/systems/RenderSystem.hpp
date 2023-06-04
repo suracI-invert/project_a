@@ -1,11 +1,13 @@
 #pragma once
 
 #include"ecs.hpp"
-#include"game.hpp"
 
 #include<glad/glad.h>
 #include<glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
+
+#include"utils/Services.hpp"
 
 class RenderSystem : public System {
     private:
