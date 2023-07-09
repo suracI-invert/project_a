@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 
     ECS::init();
 
-    // ECS::RegisterComponent<Gravity>();
+    ECS::RegisterComponent<Gravity>();
     ECS::RegisterComponent<Transform>();
     ECS::RegisterComponent<RigidBody>();
     ECS::RegisterComponent<Renderable>();
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
     auto physicsSystem = ECS::RegisterSystem<PhysicsSystem>();
     {
         Signature signature;
-        // signature.set(ECS::GetComponentType<Gravity>());
+        signature.set(ECS::GetComponentType<Gravity>());
         signature.set(ECS::GetComponentType<Transform>());
         signature.set(ECS::GetComponentType<RigidBody>());
         ECS::SetSystemSignature<PhysicsSystem>(signature);
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
 
     for (auto& entity : entities) {
         entity = ECS::CreateEntity();
-        // ECS::AddComponent<Gravity>(entity, {.g = 10});
+        ECS::AddComponent<Gravity>(entity, {.g = 0.0001f});
         ECS::AddComponent<Transform>(
             entity, 
             {
@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
         ECS::AddComponent<RigidBody>(
             entity, 
             {
-                .velocity = glm::vec3(),
+                .velocity = glm::vec3(0.0f),
                 .acceleration = 0.0f
             }
         );
